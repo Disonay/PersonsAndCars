@@ -9,8 +9,9 @@ import java.util.Objects;
 @Table(name = "cars", schema = "public", catalog = "servicedb")
 public class CarEntity {
     public CarEntity() {}
-    public CarEntity(Long id, String model, Integer horsepower, PersonEntity owner) {
+    public CarEntity(Long id, String vendor, String model, Integer horsepower, PersonEntity owner) {
         this.id = id;
+        this.vendor = vendor;
         this.model = model;
         this.horsepower = horsepower;
         this.owner = owner;
@@ -19,6 +20,9 @@ public class CarEntity {
     @Id
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @Column(name = "vendor", nullable = false)
+    private String vendor;
 
 
     @Column(name = "model", nullable = false)
@@ -41,12 +45,20 @@ public class CarEntity {
         this.owner = owner;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(String vendor) {
+        this.vendor = vendor;
     }
 
     public String getModel() {
@@ -67,33 +79,14 @@ public class CarEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        CarEntity that = (CarEntity) o;
-
-        if (!Objects.equals(id, that.id))
-            return false;
-        if (!Objects.equals(model, that.model))
-            return false;
-        if (!Objects.equals(horsepower, that.horsepower))
-            return false;
-
-        return true;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CarEntity carEntity = (CarEntity) o;
+        return id.equals(carEntity.id) && vendor.equals(carEntity.vendor) && model.equals(carEntity.model) && horsepower.equals(carEntity.horsepower) && owner.equals(carEntity.owner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, model, horsepower);
-    }
-
-    @Override
-    public String toString() {
-        return "CarEntity{" +
-                "id=" + id +
-                ", model='" + model + '\'' +
-                ", horsepower=" + horsepower +
-                '}';
+        return Objects.hash(id, vendor, model, horsepower, owner);
     }
 }
