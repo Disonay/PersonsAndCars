@@ -1,7 +1,7 @@
 package com.trainee.app.controller;
 
-import com.trainee.app.data.dto.Car;
-import com.trainee.app.data.dto.Person;
+import com.trainee.app.data.dto.CarDTO;
+import com.trainee.app.data.dto.PersonDTO;
 import com.trainee.app.service.AppService;
 import com.trainee.app.statistics.Statistics;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +19,17 @@ public class AppController {
     }
 
     @PostMapping(value = "/person")
-    void addPerson(@Valid @RequestBody Person person)  {
+    void addPerson(@Valid @RequestBody PersonDTO person)  {
         service.savePerson(person);
     }
 
     @PostMapping(value = "/car")
-    void addCar(@Valid @RequestBody Car car) {
+    void addCar(@Valid @RequestBody CarDTO car) {
         service.saveCar(car);
     }
 
     @GetMapping("/personwithcars")
-    Person getPersonWithCars(@RequestParam("personId") Long personId)  {
+    PersonDTO getPersonWithCars(@RequestParam("personId") Long personId)  {
         return service.getPerson(personId);
     }
 

@@ -9,20 +9,19 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class Person implements Serializable {
+public class PersonDTO {
 
-    public Person(Long id, String name, Date birthdate) {
+    public PersonDTO(Long id, String name, Date birthdate) {
         this.id = id;
         this.name = name;
         this.birthdate = birthdate;
     }
 
-    public Person() {}
+    public PersonDTO() {}
 
     @NotNull
     @Min(Long.MIN_VALUE)
@@ -40,13 +39,13 @@ public class Person implements Serializable {
     private Date birthdate;
 
 
-    private List<Car> cars;
+    private List<CarDTO> cars;
 
-    public List<Car> getCars() {
+    public List<CarDTO> getCars() {
         return cars;
     }
 
-    public void setCars(List<Car> cars) {
+    public void setCars(List<CarDTO> cars) {
         this.cars = cars;
     }
 
@@ -78,7 +77,7 @@ public class Person implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Person person = (Person) o;
+        PersonDTO person = (PersonDTO) o;
         return id.equals(person.id) && name.equals(person.name) && birthdate.equals(person.birthdate);
     }
 

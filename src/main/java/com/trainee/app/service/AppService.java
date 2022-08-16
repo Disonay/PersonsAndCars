@@ -1,85 +1,71 @@
 package com.trainee.app.service;
 
+import com.trainee.app.data.dto.CarDTO;
+import com.trainee.app.data.dto.PersonDTO;
+import com.trainee.app.data.entity.PersonEntity;
 import com.trainee.app.data.repository.CarRepository;
 import com.trainee.app.data.repository.PersonRepository;
 import com.trainee.app.exceptions.BadCarException;
-import com.trainee.app.statistics.Statistics;
-import com.trainee.app.utils.validation.LegalBirthdateValidation;
-import com.trainee.app.data.dto.Car;
-import com.trainee.app.data.dto.Person;
-import com.trainee.app.data.entity.CarEntity;
-import com.trainee.app.data.entity.PersonEntity;
 import com.trainee.app.exceptions.PersonAlreadyExistsException;
 import com.trainee.app.exceptions.PersonNotFoundException;
+import com.trainee.app.statistics.Statistics;
+import com.trainee.app.utils.Mapper;
+import com.trainee.app.utils.validation.LegalBirthdateValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.trainee.app.utils.Mapper;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class AppService {
-    private final CarRepository carDAO;
-    private final PersonRepository personDAO;
+    private final CarRepository carRepository;
+    private final PersonRepository personRepository;
 
-    public AppService(@Autowired CarRepository carDAO, @Autowired PersonRepository personDAO) {
-        this.carDAO = carDAO;
-        this.personDAO = personDAO;
+    public AppService(@Autowired CarRepository carRepository, @Autowired PersonRepository personRepository) {
+        this.carRepository = carRepository;
+        this.personRepository = personRepository;
     }
 
-    public void savePerson(Person person) {
-        if (personDAO.findById(person.getId()).isEmpty()) {
-            personDAO.save(Mapper.fromPersonToPersonEntity(person));
-        }
-        else {
+    public void savePerson(PersonDTO person) {
+        if (personRepository.existsById(person.getId())) {
             throw new PersonAlreadyExistsException();
         }
+        personRepository.save(Mapper.fromPersonToPersonEntity(person));
     }
 
-    public void saveCar(Car car) {
-        Optional<PersonEntity> optionalOwner = personDAO.findById(car.getOwnerId());
+    public void saveCar(CarDTO car) {
+        Optional<PersonEntity> optionalOwner = personRepository.findById(car.getOwnerId());
+        optionalOwner.orElseThrow(BadCarException::new);
 
-        if (optionalOwner.isPresent()) {
-            PersonEntity owner = optionalOwner.get();
-            if (LegalBirthdateValidation.getYearsTillNow(owner.getBirthdate()) >= 18) {
-                if (carDAO.findById(car.getId()).isEmpty()) {
-                    carDAO.save(Mapper.fromCarToCarEntity(car, owner));
-                }
-                else {
-                    throw new BadCarException();
-                }
-            }
-            else {
-                throw new BadCarException();
-            }
-        }
-        else {
+        PersonEntity owner = optionalOwner.get();
+        if (LegalBirthdateValidation.getYearsTillNow(owner.getBirthdate()) < 18) {
             throw new BadCarException();
         }
+
+        if (carRepository.existsById(car.getId())) {
+            throw new BadCarException();
+        }
+
+        carRepository.save(Mapper.fromCarToCarEntity(car, owner));
     }
 
-    public Person getPerson(Long personId) {
-        Optional<PersonEntity> optionalPerson = personDAO.findById(personId);
-        if (optionalPerson.isPresent()) {
-            return Mapper.fromPersonEntityToPerson(optionalPerson.get());
-        }
-        else {
+    public PersonDTO getPerson(Long personId) {
+        Optional<PersonEntity> optionalPerson = personRepository.findById(personId);
+        if (optionalPerson.isEmpty()) {
             throw new PersonNotFoundException();
         }
+        return Mapper.fromPersonEntityToPerson(optionalPerson.get());
     }
 
     public Statistics getStatistics() {
-        List<CarEntity> cars = carDAO.findAll();
-
-        Long personCount = (long) personDAO.findAll().size();
-        Long carCount = (long) cars.size();
-        Long uniqueVendorCount = cars.stream().map(CarEntity::getModel).distinct().count();
+        Long personCount = personRepository.count();
+        Long carCount = carRepository.count();
+        Long uniqueVendorCount = carRepository.countDistinctByVendor();
 
         return new Statistics(personCount, carCount, uniqueVendorCount);
     }
 
     public void deleteAll() {
-        personDAO.deleteAll();
+        personRepository.deleteAll();
     }
 }

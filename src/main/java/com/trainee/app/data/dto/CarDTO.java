@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.Objects;
 
-public class Car {
+public class CarDTO {
 
     @NotNull
     @Min(Long.MIN_VALUE)
@@ -17,14 +17,14 @@ public class Car {
     @NotNull
     private String model;
 
-    public Car(Long id, String model, Integer horsepower, Long ownerId) {
+    public CarDTO(Long id, String model, Integer horsepower, Long ownerId) {
         this.id = id;
         this.model = model;
         this.horsepower = horsepower;
         this.ownerId = ownerId;
     }
 
-    public Car() {}
+    public CarDTO() {}
 
     @Min(1)
     @Max(Integer.MAX_VALUE)
@@ -72,7 +72,7 @@ public class Car {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Car car = (Car) o;
+        CarDTO car = (CarDTO) o;
         return id.equals(car.id) && model.equals(car.model) && horsepower.equals(car.horsepower) && ownerId.equals(car.ownerId);
     }
 

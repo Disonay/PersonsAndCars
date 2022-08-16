@@ -19,10 +19,10 @@ import java.util.List;
 public class RepositoryTest {
 
     @Autowired
-    CarRepository carDao;
+    CarRepository carRepository;
 
     @Autowired
-    PersonRepository personDao;
+    PersonRepository personRepository;
 
     @Autowired
     TestEntityManager testEntityManager;
@@ -44,12 +44,14 @@ public class RepositoryTest {
                 new SimpleDateFormat("dd.MM.yyyy").parse("24.10.2001"));
         car1 = new CarEntity(
                 1L,
-                "BMW-X5",
+                "BMW",
+                "X5",
                 14,
                 person1);
         car2 = new CarEntity(
                 2L,
-                "AUDI-A6",
+                "BMW",
+                "X6",
                 14,
                 person1);
         person1.setCars(List.of(car1, car2));
@@ -62,52 +64,44 @@ public class RepositoryTest {
 
     @Test
     public void testFindExistedCarById() {
-        Assertions.assertTrue(carDao.findById(1L).isPresent());
-        Assertions.assertEquals(car1, carDao.findById(1L).get());
+        Assertions.assertTrue(carRepository.findById(1L).isPresent());
+        Assertions.assertTrue(carRepository.existsById(1L));
+        Assertions.assertEquals(car1, carRepository.findById(1L).get());
 
-        Assertions.assertTrue(carDao.findById(2L).isPresent());
-        Assertions.assertEquals(car2, carDao.findById(2L).get());
+        Assertions.assertTrue(carRepository.findById(2L).isPresent());
+        Assertions.assertTrue(carRepository.existsById(2L));
+        Assertions.assertEquals(car2, carRepository.findById(2L).get());
     }
 
     @Test
     public void testFindNotExistedCarById() {
-        Assertions.assertTrue(carDao.findById(3L).isEmpty());
+        Assertions.assertFalse(carRepository.existsById(3L));
+        Assertions.assertTrue(carRepository.findById(3L).isEmpty());
     }
 
     @Test
     public void testFindExistedPersonById() {
-        Assertions.assertTrue(personDao.findById(1L).isPresent());
-        Assertions.assertEquals(person1, personDao.findById(1L).get());
+        Assertions.assertTrue(personRepository.findById(1L).isPresent());
+        Assertions.assertTrue(personRepository.existsById(1L));
+        Assertions.assertEquals(person1, personRepository.findById(1L).get());
 
-        Assertions.assertTrue(personDao.findById(2L).isPresent());
-        Assertions.assertEquals(person2, personDao.findById(2L).get());
+        Assertions.assertTrue(personRepository.findById(2L).isPresent());
+        Assertions.assertTrue(personRepository.existsById(2L));
+        Assertions.assertEquals(person2, personRepository.findById(2L).get());
     }
 
     @Test
     public void testFindNotExistedPersonById() {
-        Assertions.assertTrue(personDao.findById(3L).isEmpty());
-    }
-
-    @Test
-    public void testGetAllCars() {
-        List<CarEntity> cars = List.of(car1, car2);
-
-        Assertions.assertIterableEquals(cars, carDao.findAll());
-    }
-
-    @Test
-    public void testGetAllPersons() {
-        List<PersonEntity> persons = List.of(person1, person2);
-
-        Assertions.assertIterableEquals(persons, personDao.findAll());
+        Assertions.assertFalse(personRepository.existsById(3L));
+        Assertions.assertTrue(personRepository.findById(3L).isEmpty());
     }
 
     @Test
     public void testClearPersons() {
-        personDao.deleteAll();
+        personRepository.deleteAll();
 
-        Assertions.assertEquals(0, personDao.findAll().size());
-        Assertions.assertEquals(0, carDao.findAll().size());
+        Assertions.assertEquals(0, personRepository.findAll().size());
+        Assertions.assertEquals(0, carRepository.findAll().size());
     }
 
     @Test
@@ -119,27 +113,45 @@ public class RepositoryTest {
         );
 
         Assertions.assertDoesNotThrow(() -> {
-            personDao.save(newPerson);
+            personRepository.save(newPerson);
         });
 
-        Assertions.assertTrue(personDao.findById(3L).isPresent());
-        Assertions.assertEquals(newPerson, personDao.findById(3L).get());
+        Assertions.assertTrue(personRepository.findById(3L).isPresent());
+        Assertions.assertTrue(personRepository.existsById(3L));
+        Assertions.assertEquals(newPerson, personRepository.findById(3L).get());
     }
 
     @Test
-    public void testSaveCar() throws ParseException {
+    public void testSaveCar() {
         CarEntity newCar = new CarEntity(
                 3L,
-                "BMW-X5",
+                "BMW",
+                "X5",
                 14,
                 person2
         );
 
         Assertions.assertDoesNotThrow(() -> {
-            carDao.save(newCar);
+            carRepository.save(newCar);
         });
 
-        Assertions.assertTrue(carDao.findById(3L).isPresent());
-        Assertions.assertEquals(newCar, carDao.findById(3L).get());
+        Assertions.assertTrue(carRepository.findById(3L).isPresent());
+        Assertions.assertTrue(carRepository.existsById(3L));
+        Assertions.assertEquals(newCar, carRepository.findById(3L).get());
+    }
+
+    @Test
+    public void getPersonsCount() {
+        Assertions.assertEquals(2, personRepository.count());
+    }
+
+    @Test
+    public void getCarsCount() {
+        Assertions.assertEquals(2, carRepository.count());
+    }
+
+    @Test
+    public void getDistinctCarVendor() {
+        Assertions.assertEquals(1, carRepository.countDistinctByVendor());
     }
 }

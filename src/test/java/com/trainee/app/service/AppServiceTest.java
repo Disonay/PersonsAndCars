@@ -1,7 +1,7 @@
 package com.trainee.app.service;
 
-import com.trainee.app.data.dto.Car;
-import com.trainee.app.data.dto.Person;
+import com.trainee.app.data.dto.CarDTO;
+import com.trainee.app.data.dto.PersonDTO;
 import com.trainee.app.data.entity.CarEntity;
 import com.trainee.app.data.entity.PersonEntity;
 import com.trainee.app.data.repository.CarRepository;
@@ -40,12 +40,12 @@ public class AppServiceTest {
     @InjectMocks
     private AppService appService;
 
-    static Person person;
-    static Person illegalPerson;
+    static PersonDTO person;
+    static PersonDTO illegalPerson;
     static PersonEntity personEntity;
 
     static PersonEntity illegalPersonEntity;
-    static Car car;
+    static CarDTO car;
     static CarEntity carEntity;
 
     MockitoSession session;
@@ -65,9 +65,9 @@ public class AppServiceTest {
 
     @BeforeAll
     public static void setUp() throws ParseException {
-        person = new Person(1L, "Сергей", new SimpleDateFormat("dd.MM.yyyy").parse("25.10.2001"));
-        illegalPerson = new Person(1L, "Сергей", new SimpleDateFormat("dd.MM.yyyy").parse("25.10.2012"));
-        car = new Car(1L, "BWM-X5", 14, 1L);
+        person = new PersonDTO(1L, "Сергей", new SimpleDateFormat("dd.MM.yyyy").parse("25.10.2001"));
+        illegalPerson = new PersonDTO(1L, "Сергей", new SimpleDateFormat("dd.MM.yyyy").parse("25.10.2012"));
+        car = new CarDTO(1L, "BWM-X5", 14, 1L);
         person.setCars(List.of(car));
 
         personEntity = Mapper.fromPersonToPersonEntity(person);
@@ -77,7 +77,7 @@ public class AppServiceTest {
 
     @Test
     public void testSaveNewPerson() {
-        Mockito.when(personDAO.findById(person.getId())).thenReturn(Optional.empty());
+        Mockito.when(personDAO.existsById(person.getId())).thenReturn(false);
 
         Assertions.assertDoesNotThrow(() -> {
             appService.savePerson(person);
@@ -86,7 +86,7 @@ public class AppServiceTest {
 
     @Test
     public void testSaveExistedPerson() {
-        Mockito.when(personDAO.findById(person.getId())).thenReturn(Optional.of(personEntity));
+        Mockito.when(personDAO.existsById(person.getId())).thenReturn(true);
 
         Assertions.assertThrows(PersonAlreadyExistsException.class, () -> {
             appService.savePerson(person);
@@ -96,7 +96,7 @@ public class AppServiceTest {
     @Test
     public void testSaveNewCorrectCar() {
         Mockito.when(personDAO.findById(person.getId())).thenReturn(Optional.of(personEntity));
-        Mockito.when(carDAO.findById(car.getId())).thenReturn(Optional.empty());
+        Mockito.when(carDAO.existsById(car.getId())).thenReturn(false);
 
         Assertions.assertDoesNotThrow(() -> {
             appService.saveCar(car);
@@ -106,7 +106,7 @@ public class AppServiceTest {
     @Test
     public void testSaveExistedCar() {
         Mockito.when(personDAO.findById(car.getOwnerId())).thenReturn(Optional.of(personEntity));
-        Mockito.when(carDAO.findById(car.getId())).thenReturn(Optional.of(carEntity));
+        Mockito.when(carDAO.existsById(car.getId())).thenReturn(true);
 
         Assertions.assertThrows(BadCarException.class, () -> {
             appService.saveCar(car);
@@ -140,8 +140,9 @@ public class AppServiceTest {
 
     @Test
     public void testStatistics() {
-        Mockito.when(personDAO.findAll()).thenReturn(List.of(personEntity, illegalPersonEntity));
-        Mockito.when(carDAO.findAll()).thenReturn(List.of(carEntity));
+        Mockito.when(personDAO.count()).thenReturn(2L);
+        Mockito.when(carDAO.count()).thenReturn(1L);
+        Mockito.when(carDAO.countDistinctByVendor()).thenReturn(1L);
 
         Assertions.assertEquals(new Statistics(2L, 1L, 1L), appService.getStatistics());
     }
